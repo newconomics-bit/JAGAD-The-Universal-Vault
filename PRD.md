@@ -4,10 +4,10 @@
 |---|---|
 | Product Name | JAGAD |
 | Token Ticker | $JGAD |
-| Version | 0.1.0 |
+| Version | 0.2.0 |
 | Status | Draft |
 | Date | Oktober 2026 |
-| Owner | Mufti Zaka / Founder JAGAD |
+| Owner | Mufti zaka |
 | Document Type | Product Requirements Document |
 
 ---
@@ -63,7 +63,7 @@ ke dalam satu token vault yang:
 - bisa dibeli dengan USDC,
 - otomatis terdiversifikasi,
 - otomatis rebalance,
-- otomatis mengompounding yield/dividen,
+- otomatis mengompounding yield/revenue,
 - dan tetap bisa dicairkan kembali ke USDC.
 
 ### Data Pendukung Awal
@@ -91,13 +91,16 @@ Produk JAGAD dianggap sukses jika mencapai tujuan terukur berikut.
 | ID | Goal | Metrik Kesuksesan |
 |---|---|---|
 | G1 | Menyederhanakan eksposur aset global dalam satu token | Pengguna dapat deposit USDC dan menerima $JGAD dalam satu alur transaksi. |
-| G2 | Mengurangi volatilitas dibandingkan holding BTC saja | Target awal: volatilitas 90 hari $JGAD tidak lebih dari 60% volatilitas BTC pada periode yang sama. |
+| G2 | Mengurangi volatilitas dibandingkan holding BTC saja | Target awal: volatilitas 90 hari $JGAD tidak lebih dari 70% volatilitas BTC pada periode yang sama. |
 | G3 | Menjaga alokasi portofolio tetap sesuai target | Rebalancing otomatis terjadi ketika bobot aset melenceng lebih dari 5% dari target. |
-| G4 | Mengompounding yield dan dividen secara otomatis | Minimal 95% idle yield/dividen yang melebihi threshold sweep berhasil di-reinvest. |
+| G4 | Mengompounding yield/revenue secara otomatis | Minimal 95% idle yield yang melebihi threshold sweep berhasil di-reinvest. |
 | G5 | Memberikan transparansi nilai aset kepada user | Dashboard menampilkan NAV, alokasi aset, riwayat rebalance, riwayat sweep, dan fee secara real-time atau near-real-time. |
 | G6 | Menjaga keamanan vault | Tidak ada critical/high severity issue yang unresolved sebelum mainnet launch. |
 | G7 | Menjaga biaya operasional tetap efisien | Rebalancing dan sweep tidak boleh dijalankan jika estimated cost lebih besar daripada expected benefit. |
 | G8 | Membangun kepercayaan user | User dapat memahami bahwa $JGAD bukan stablecoin USD, melainkan index token dengan risiko fluktuasi. |
+| G9 | Membatasi drawdown relatif terhadap BTC | Max drawdown vault tidak melebihi 70% drawdown BTC pada periode yang sama dalam backtest 2020-2026. |
+| G10 | Memastikan keberlanjutan operasional | Proyek memiliki runway operasional minimal 12 bulan sebelum public launch. |
+| G11 | Mempublikasikan backtest historis | Backtest 2020-2026 selesai dan dipublikasikan sebelum public launch, mencakup max drawdown, CAGR, Sharpe ratio, dan perbandingan dengan BTC/ETH/S&P 500. |
 
 ### Goal Utama MVP
 
@@ -107,9 +110,10 @@ MVP JAGAD sukses jika:
 2. Vault otomatis mengalokasikan dana ke target basket.
 3. User menerima token $JGAD.
 4. Vault bisa melakukan rebalance ketika drift > 5%.
-5. Vault bisa redeem $JGAD kembali ke USDC.
+5. Vault bisa redeem $JGAD kembali ke USDC, dengan partial redemption jika likuiditas tidak cukup.
 6. Dashboard minimal menampilkan NAV dan komposisi aset.
 7. Semua fungsi inti lolos test lokal dan testnet.
+8. Backtest historis dipublikasikan.
 
 ---
 
@@ -173,13 +177,16 @@ Prioritas:
 | US-6 | P1 | Sebagai pengguna, saya ingin melihat NAV, alokasi aset, dan riwayat rebalance supaya saya percaya bahwa vault dikelola dengan transparan. |
 | US-7 | P1 | Sebagai operator, saya ingin bisa pause vault jika oracle error atau ada anomali supaya dana user tidak dirugikan. |
 | US-8 | P1 | Sebagai admin multisig, saya ingin mengatur parameter target weight, drift threshold, fee, dan address aset supaya vault bisa disesuaikan tanpa redeploy penuh jika memungkinkan. |
-| US-9 | P2 | Sebagai pengguna, saya ingin yield dan dividen otomatis di-compound supaya kekayaan saya tumbuh tanpa harus klaim manual. |
-| US-10 | P2 | Sebagai pengguna, saya ingin melihat estimasi biaya gas dan slippage sebelum deposit/redeem supaya saya tidak terkejut dengan biaya transaksi. |
-| US-11 | P2 | Sebagai DAO treasury, saya ingin akses dashboard khusus dan laporan on-chain supaya saya bisa mempertanggungjawabkan penggunaan treasury. |
-| US-12 | P2 | Sebagai pengguna baru, saya ingin penjelasan jelas bahwa $JGAD bukan stablecoin USD supaya saya tidak salah ekspektasi. |
-| US-13 | P3 | Sebagai pengguna, saya ingin fiat on-ramp supaya bisa beli $JGAD langsung pakai kartu debit/kredit. |
-| US-14 | P3 | Sebagai pengguna, saya ingin mobile app supaya bisa memantau portofolio dari ponsel. |
-| US-15 | P3 | Sebagai community member, saya ingin governance ringan untuk mengusulkan perubahan parameter vault. |
+| US-9 | P1 | Sebagai pengguna, saya ingin partial redemption jika likuiditas tidak cukup supaya saya tetap bisa keluar sebagian tanpa harus menunggu atau gagal total. |
+| US-10 | P1 | Sebagai pengguna, saya ingin emergency proportional redemption saat vault paused supaya saya tidak terjebak jika terjadi insiden. |
+| US-11 | P1 | Sebagai pengguna baru, saya ingin penjelasan jelas bahwa $JGAD bukan stablecoin USD supaya saya tidak salah ekspektasi. |
+| US-12 | P2 | Sebagai pengguna, saya ingin yield/revenue otomatis di-compound supaya kekayaan saya tumbuh tanpa harus klaim manual. |
+| US-13 | P2 | Sebagai pengguna, saya ingin melihat estimasi biaya gas dan slippage sebelum deposit/redeem supaya saya tidak terkejut dengan biaya transaksi. |
+| US-14 | P2 | Sebagai pengguna, saya ingin melihat historical drawdown dan backtest supaya saya bisa menilai risiko sebelum deposit. |
+| US-15 | P2 | Sebagai DAO treasury, saya ingin akses dashboard khusus dan laporan on-chain supaya saya bisa mempertanggungjawabkan penggunaan treasury. |
+| US-16 | P3 | Sebagai pengguna, saya ingin fiat on-ramp supaya bisa beli $JGAD langsung pakai kartu debit/kredit. |
+| US-17 | P3 | Sebagai pengguna, saya ingin mobile app supaya bisa memantau portofolio dari ponsel. |
+| US-18 | P3 | Sebagai community member, saya ingin governance ringan untuk mengusulkan perubahan parameter vault. |
 
 ---
 
@@ -192,74 +199,100 @@ Prioritas:
 | FR-1 | P1 | Sistem harus memungkinkan user deposit USDC ke JAGAD Vault. | User dapat approve USDC dan memanggil deposit. Deposit gagal jika user tidak punya saldo cukup atau vault paused. |
 | FR-2 | P1 | Sistem harus mencetak token $JGAD kepada user setelah deposit berhasil. | Jumlah $JGAD yang di-mint dihitung berdasarkan NAV vault saat deposit. |
 | FR-3 | P1 | Sistem harus mengalokasikan deposit USDC ke target basket secara otomatis. | Setelah deposit, alokasi aktual mendekati target weight dalam toleransi yang ditentukan, misalnya ±1% setelah swap. |
-| FR-4 | P1 | Sistem harus memungkinkan user redeem $JGAD kembali menjadi USDC. | $JGAD dibakar, aset vault dijual proporsional, dan USDC dikirim ke user. |
+| FR-4 | P1 | Sistem harus memungkinkan user redeem $JGAD kembali menjadi USDC. | $JGAD dibakar, aset vault dijual proporsional, dan USDC dikirim ke user. Jika likuiditas tidak cukup, sistem melakukan partial redemption dan memasukkan sisanya ke redemption queue. |
 | FR-5 | P1 | Sistem harus menghitung NAV vault berdasarkan harga oracle aset underlying. | NAV dapat dibaca on-chain atau melalui view function. Harga stale harus ditolak. |
 | FR-6 | P1 | Sistem harus menyimpan seluruh aset underlying di dalam vault contract, bukan di wallet pribadi admin. | Semua aset tercatat sebagai milik vault dan dapat diaudit on-chain. |
+| FR-7 | P1 | Sistem harus menggunakan virtual shares dan decimals offset dalam perhitungan NAV untuk mencegah inflation/donation attack. | Formula: navPerShare = (totalAssets + 1) / (totalSupply + 10**decimalsOffset). Wajib ada unit test yang membuktikan deposit pertama dengan 1 wei tidak dapat dimanipulasi. |
+| FR-8 | P1 | Sistem harus menetapkan minimum deposit untuk mencegah dust attack. | Deposit di bawah 10 USDC harus revert. |
 
 ### 5.2 Target Asset Basket
 
 | ID | Priority | Functional Requirement | Acceptance Criteria |
 |---|---:|---|---|
-| FR-7 | P1 | Vault harus mendukung struktur basket bertier. | Tier 1, Tier 2, dan Tier 3 memiliki target weight yang dapat dikonfigurasi. |
-| FR-8 | P1 | Target awal Tier 1 adalah 45%. | Terdiri dari 20% USDC/sDAI, 15% PAXG, dan 10% synthetic silver. |
-| FR-9 | P1 | Target awal Tier 2 adalah 25%. | Terdiri dari 25% WBTC/Bitcoin exposure. |
-| FR-10 | P1 | Target awal Tier 3 adalah 30%. | Terdiri dari proxy energi 10%, proxy tambang/logam 10%, proxy properti/REITs 5%, dan proxy agrikultur 5%. |
-| FR-11 | P1 | Jika aset Tier 3 berupa tokenized stock/REIT yang terbatas KYC, sistem harus memiliki mekanisme whitelist atau fallback synthetic proxy. | Vault tidak boleh terjebak pada aset yang tidak bisa diperdagangkan/diredeem secara normal. |
-| FR-12 | P2 | Admin multisig dapat mengubah daftar aset dan target weight melalui parameter governance. | Perubahan harus tercatat on-chain dan memiliki timelock jika diperlukan. |
+| FR-9 | P1 | Vault harus mendukung struktur basket bertier. | Tier 1, Tier 2, dan Tier 3 memiliki target weight yang dapat dikonfigurasi. |
+| FR-10 | P1 | Target awal Tier 1 adalah 55%. | Terdiri dari 30% USDC/sDAI, 15% PAXG, dan 10% synthetic silver. |
+| FR-11 | P1 | Target awal Tier 2 adalah 25%. | Terdiri dari 25% WBTC/Bitcoin exposure. |
+| FR-12 | P1 | Target awal Tier 3 adalah 20%. | Terdiri dari proxy energi 7%, proxy tambang/logam 7%, proxy properti/REITs 3%, dan proxy agrikultur 3%. |
+| FR-13 | P1 | Jika aset Tier 3 berupa tokenized stock/REIT yang terbatas KYC, sistem harus memiliki mekanisme whitelist atau fallback synthetic proxy. | Vault tidak boleh terjebak pada aset yang tidak bisa diperdagangkan/diredeem secara normal. |
+| FR-14 | P1 | Setiap aset harus memiliki liquidity gate. | AssetRegistry menyimpan minLiquidityUsd dan maxSlippageBps per aset. Jika likuiditas aktual di bawah threshold, bobot aset otomatis di-cut dan dialihkan ke USDC. |
+| FR-15 | P2 | Admin multisig dapat mengubah daftar aset dan target weight melalui parameter governance. | Perubahan harus tercatat on-chain dan memiliki timelock jika diperlukan. |
 
 ### 5.3 Rebalancing
 
 | ID | Priority | Functional Requirement | Acceptance Criteria |
 |---|---:|---|---|
-| FR-13 | P1 | Sistem harus mengecek drift bobot aset terhadap target weight. | Drift dihitung dalam basis points atau percentage points. |
-| FR-14 | P1 | Rebalancing harus dipicu ketika satu atau lebih aset melenceng lebih dari 5% dari target. | Jika deviation <= 5%, rebalance tidak dijalankan. |
-| FR-15 | P1 | Rebalancing harus menjual aset overweight dan membeli aset underweight. | Setelah rebalance sukses, bobot kembali mendekati target. |
-| FR-16 | P1 | Rebalancing harus memiliki slippage protection. | Swap gagal jika output kurang dari minAmountOut yang ditentukan. |
-| FR-17 | P1 | Rebalancing tidak boleh dijalankan jika oracle stale, vault paused, atau liquidity tidak cukup. | Sistem harus revert dengan error yang jelas. |
-| FR-18 | P2 | Sistem harus memperhitungkan estimated gas fee sebelum rebalance. | Jika estimated cost lebih besar dari benefit, rebalance dapat diskip atau dijadwalkan ulang. |
-| FR-19 | P2 | Sistem harus memiliki cooldown minimal antar rebalance. | Mencegah rebalance berlebihan yang menguras gas. |
+| FR-16 | P1 | Sistem harus mengecek drift bobot aset terhadap target weight. | Drift dihitung dalam basis points atau percentage points. |
+| FR-17 | P1 | Rebalancing harus dipicu ketika satu atau lebih aset melenceng lebih dari 5% dari target. | Jika deviation <= 5%, rebalance tidak dijalankan. |
+| FR-18 | P1 | Rebalancing harus menjual aset overweight dan membeli aset underweight. | Setelah rebalance sukses, bobot kembali mendekati target. |
+| FR-19 | P1 | Rebalancing harus memiliki slippage protection. | Swap gagal jika output kurang dari minAmountOut yang ditentukan. |
+| FR-20 | P1 | Rebalancing tidak boleh dijalankan jika oracle stale, vault paused, atau liquidity tidak cukup. | Sistem harus revert dengan error yang jelas. |
+| FR-21 | P2 | Sistem harus memperhitungkan estimated gas fee sebelum rebalance. | Jika estimated cost lebih besar dari benefit, rebalance dapat diskip atau dijadwalkan ulang. |
+| FR-22 | P2 | Sistem harus memiliki cooldown minimal antar rebalance. | Mencegah rebalance berlebihan yang menguras gas. Default cooldown: 24 jam. |
+| FR-23 | P2 | Rebalancing harus menggunakan batch swap: jual semua aset overweight menjadi USDC terlebih dahulu, lalu beli aset underweight. | Mengurangi jumlah swap dan gas cost. |
 
-### 5.4 Dividend / Yield Compounding
-
-| ID | Priority | Functional Requirement | Acceptance Criteria |
-|---|---:|---|---|
-| FR-20 | P1 | Sistem harus dapat mendeteksi idle yield/dividen yang masuk ke vault. | Idle balance dapat dibaca dan dibedakan dari principal assets. |
-| FR-21 | P1 | Sistem harus dapat melakukan sweep terhadap idle yield/dividen. | Sweep hanya dijalankan jika balance melebihi minimum threshold. |
-| FR-22 | P1 | Hasil sweep harus di-reinvest ke aset target yang dikonfigurasi. | Default reinvestment split dapat diatur oleh multisig. |
-| FR-23 | P2 | Sistem harus mencatat riwayat dividend sweep. | Event emits amount, timestamp, target assets, dan tx hash. |
-| FR-24 | P2 | Sweep tidak boleh mengganggu solvabilitas vault. | Setelah sweep, vault tetap memenuhi invariant aset >= liabilitas. |
-
-### 5.5 Fees and Treasury
+### 5.4 Yield / Revenue Compounding
 
 | ID | Priority | Functional Requirement | Acceptance Criteria |
 |---|---:|---|---|
-| FR-25 | P1 | Sistem harus mendukung deposit fee. | Fee default dapat dikonfigurasi, misalnya 0.3%–0.5%. |
-| FR-26 | P1 | Sistem harus mendukung redeem fee. | Fee dipotong dari USDC yang dikirim ke user. |
-| FR-27 | P1 | Sistem harus mendukung management fee atau yield reserve untuk operasional. | Fee tidak boleh diambil saat vault paused atau dalam kondisi darurat tanpa kontrol multisig. |
-| FR-28 | P1 | Sebagian fee/yield harus dialokasikan ke gas reserve. | Gas reserve digunakan untuk membayar rebalance dan sweep. |
-| FR-29 | P2 | Treasury harus dapat menarik fee secara terbatas dan transparan. | Withdrawal fee harus melalui multisig dan tercatat on-chain. |
+| FR-24 | P1 | Sistem harus dapat mendeteksi idle yield/revenue yang masuk ke vault. | Idle balance dapat dibaca dan dibedakan dari principal assets. |
+| FR-25 | P1 | Sistem harus dapat melakukan sweep terhadap idle yield/revenue. | Sweep hanya dijalankan jika balance melebihi minimum threshold. |
+| FR-26 | P1 | Hasil sweep harus di-reinvest ke aset target yang dikonfigurasi. | Default reinvestment split dapat diatur oleh multisig. |
+| FR-27 | P2 | Sistem harus mencatat riwayat yield sweep. | Event emits amount, timestamp, target assets, dan tx hash. |
+| FR-28 | P2 | Sweep tidak boleh mengganggu solvabilitas vault. | Setelah sweep, vault tetap memenuhi invariant aset >= liabilitas. |
+| FR-29 | P2 | Minimum sweep threshold default adalah $1,000 equivalent USDC. | Sweep tidak dijalankan jika idle balance di bawah threshold. |
 
-### 5.6 Security and Admin Controls
-
-| ID | Priority | Functional Requirement | Acceptance Criteria |
-|---|---:|---|---|
-| FR-30 | P1 | Sistem harus memiliki akses kontrol berbasis role. | Hanya address tertentu yang dapat pause, update parameter, atau withdraw treasury. |
-| FR-31 | P1 | Owner admin harus berupa multisig, bukan wallet pribadi. | Semua fungsi privileged hanya dapat dijalankan oleh multisig. |
-| FR-32 | P1 | Sistem harus memiliki fungsi pause dan unpause. | Saat paused, deposit/redeem/rebalance/sweep tidak dapat dijalankan kecuali fungsi darurat yang diizinkan. |
-| FR-33 | P1 | Sistem harus melindungi diri dari reentrancy attack. | Fungsi eksternal call harus menggunakan reentrancy guard atau checks-effects-interactions pattern. |
-| FR-34 | P1 | Sistem harus memvalidasi oracle price. | Harga ditolak jika timestamp terlalu lama, deviation terlalu besar, atau aggregator tidak valid. |
-| FR-35 | P2 | Sistem harus memiliki emergency withdrawal mechanism untuk aset yang salah kirim. | Hanya multisig yang dapat menarik token tidak terdaftar, dengan catatan dan event. |
-
-### 5.7 Transparency and Dashboard
+### 5.5 Redemption Safety
 
 | ID | Priority | Functional Requirement | Acceptance Criteria |
 |---|---:|---|---|
-| FR-36 | P1 | Sistem harus memancarkan event untuk deposit, redeem, mint, burn, rebalance, sweep, pause, dan parameter update. | Event dapat di-index oleh frontend/dashboard. |
-| FR-37 | P1 | Dashboard harus menampilkan total NAV vault. | NAV dihitung dari seluruh aset underlying dikurangi liabilitas/fee terutang. |
-| FR-38 | P1 | Dashboard harus menampilkan alokasi aktual vs target. | User dapat melihat deviation tiap aset. |
-| FR-39 | P1 | Dashboard harus menampilkan riwayat rebalance dan dividend sweep. | Riwayat minimal mencakup timestamp, aset, amount, dan status. |
-| FR-40 | P2 | Dashboard harus menampilkan fee yang dikenakan. | User dapat melihat deposit fee, redeem fee, dan management fee. |
-| FR-41 | P2 | Dashboard harus menampilkan disclaimer risiko. | Pengguna diberi tahu bahwa $JGAD bukan stablecoin USD dan nilainya dapat naik/turun. |
+| FR-30 | P1 | Sistem harus mendukung partial redemption jika likuiditas tidak cukup. | User menerima USDC sebagian, dan sisanya masuk redemption queue dengan estimasi waktu penyelesaian. |
+| FR-31 | P1 | Sistem harus menyediakan emergency proportional redemption saat vault paused. | User dapat klaim aset underlying langsung sesuai porsi share tanpa harus lewat swap. Hanya aktif saat vault paused atau emergency mode. |
+| FR-32 | P1 | Sistem harus mendukung redemption cap per window di soft launch. | Default cap: $50,000 per 10 menit. Cap dapat dikonfigurasi oleh multisig. |
+| FR-33 | P1 | Sistem harus menjaga operating reserve USDC minimal 20% dari total vault value. | Reserve ini digunakan untuk redemption normal tanpa harus menjual aset lain. |
+
+### 5.6 Fees and Treasury
+
+| ID | Priority | Functional Requirement | Acceptance Criteria |
+|---|---:|---|---|
+| FR-34 | P1 | Sistem harus mendukung deposit fee. | Fee default 0.4%. |
+| FR-35 | P1 | Sistem harus mendukung redeem fee. | Fee default 0.4%. |
+| FR-36 | P1 | Sistem harus mendukung management fee atau yield reserve untuk operasional. | Fee tidak boleh diambil saat vault paused atau dalam kondisi darurat tanpa kontrol multisig. Default management fee: 0.5% per tahun, di-accrue dari yield. |
+| FR-37 | P1 | Sebagian fee/yield harus dialokasikan ke gas reserve. | Gas reserve digunakan untuk membayar rebalance dan sweep. |
+| FR-38 | P2 | Treasury harus dapat menarik fee secara terbatas dan transparan. | Withdrawal fee harus melalui multisig dan tercatat on-chain. |
+
+### 5.7 Security and Admin Controls
+
+| ID | Priority | Functional Requirement | Acceptance Criteria |
+|---|---:|---|---|
+| FR-39 | P1 | Sistem harus memiliki akses kontrol berbasis role. | Hanya address tertentu yang dapat pause, update parameter, atau withdraw treasury. |
+| FR-40 | P1 | Owner admin harus berupa multisig, bukan wallet pribadi. | Semua fungsi privileged hanya dapat dijalankan oleh multisig. |
+| FR-41 | P1 | Sistem harus memiliki fungsi pause dan unpause. | Saat paused, deposit/redeem/rebalance/sweep tidak dapat dijalankan kecuali fungsi darurat yang diizinkan. |
+| FR-42 | P1 | Sistem harus melindungi diri dari reentrancy attack. | Fungsi eksternal call harus menggunakan reentrancy guard atau checks-effects-interactions pattern. |
+| FR-43 | P1 | Sistem harus memvalidasi oracle price. | Harga ditolak jika timestamp terlalu lama, deviation terlalu besar, atau aggregator tidak valid. |
+| FR-44 | P2 | Sistem harus memiliki emergency withdrawal mechanism untuk aset yang salah kirim. | Hanya multisig yang dapat menarik token tidak terdaftar, dengan catatan dan event. |
+| FR-45 | P2 | Sistem harus mendukung timelock untuk semua perubahan parameter kritis. | Default timelock: 24-48 jam. |
+
+### 5.8 Transparency and Dashboard
+
+| ID | Priority | Functional Requirement | Acceptance Criteria |
+|---|---:|---|---|
+| FR-46 | P1 | Sistem harus memancarkan event untuk deposit, redeem, mint, burn, rebalance, sweep, pause, dan parameter update. | Event dapat di-index oleh frontend/dashboard. |
+| FR-47 | P1 | Dashboard harus menampilkan total NAV vault. | NAV dihitung dari seluruh aset underlying dikurangi liabilitas/fee terutang. |
+| FR-48 | P1 | Dashboard harus menampilkan alokasi aktual vs target. | User dapat melihat deviation tiap aset. |
+| FR-49 | P1 | Dashboard harus menampilkan riwayat rebalance dan yield sweep. | Riwayat minimal mencakup timestamp, aset, amount, dan status. |
+| FR-50 | P1 | Dashboard harus menampilkan disclaimer risiko yang jelas. | Pengguna diberi tahu bahwa $JGAD bukan stablecoin USD dan nilainya dapat naik/turun. |
+| FR-51 | P1 | Dashboard harus menampilkan historical backtest sebelum public launch. | Backtest mencakup max drawdown, CAGR, Sharpe ratio, dan perbandingan dengan BTC/ETH/S&P 500. |
+| FR-52 | P2 | Dashboard harus menampilkan fee yang dikenakan. | User dapat melihat deposit fee, redeem fee, dan management fee. |
+| FR-53 | P2 | Dashboard harus menampilkan vault liquidity status. | User dapat melihat apakah vault dalam mode normal, capped, atau queue. |
+
+### 5.9 Compliance and Education
+
+| ID | Priority | Functional Requirement | Acceptance Criteria |
+|---|---:|---|---|
+| FR-54 | P1 | Frontend harus melakukan jurisdiction gating. | US users di-block di MVP. Geo-block bukan solusi hukum sempurna, tetapi menunjukkan good faith. |
+| FR-55 | P1 | Produk tidak boleh menggunakan istilah "dividend" dalam smart contract, UI, atau marketing. | Gunakan istilah "yield", "revenue", atau "NAV appreciation". |
+| FR-56 | P1 | Produk tidak boleh menggunakan tokenized stock US-domiciled di MVP. | Tier 3 harus memakai synthetic proxy atau aset on-chain yang tidak diklasifikasikan sebagai security. |
+| FR-57 | P2 | Sistem harus mendukung geo-blocking yang dapat dikonfigurasi. | Daftar jurisdiction yang di-block dapat diubah oleh multisig. |
 
 ---
 
@@ -276,12 +309,19 @@ Prioritas:
 | NFR-7 | P1 | Availability | Smart contract harus dapat diakses 24/7 selama blockchain aktif. | Frontend dashboard target uptime 99.5% di luar maintenance. |
 | NFR-8 | P1 | Auditability | Semua perubahan parameter dan aksi vault harus tercatat on-chain. | Event dan transaction history dapat direkonstruksi. |
 | NFR-9 | P1 | User Clarity | Produk harus secara jelas dikomunikasikan sebagai index vault, bukan stablecoin 1:1 USD. | Disclaimer muncul di dApp, docs, dan marketing material. |
-| NFR-10 | P2 | Upgradeability | Jika menggunakan upgradeable contract, harus ada timelock, storage safety, dan upgrade event. | Upgrade tidak dapat dilakukan oleh single EOA. |
-| NFR-11 | P2 | Scalability | Arsitektur harus mampu menangani peningkatan TVL tanpa mengubah logika inti secara drastis. | Rebalancing tetap aman saat vault bertambah besar, dengan slippage control. |
-| NFR-12 | P2 | Compliance Awareness | Produk tidak boleh mengklaim sebagai bank, e-money, atau sekuritas tanpa dasar hukum. | Legal disclaimer dan jurisdiction restriction diperlukan sebelum public launch. |
-| NFR-13 | P2 | Liquidity Safety | Aset dalam vault harus memiliki likuiditas cukup untuk redeem normal. | Aset dengan likuiditas rendah hanya boleh diberi bobot kecil atau memakai whitelist/fallback. |
-| NFR-14 | P3 | Accessibility | Dashboard harus dapat digunakan oleh user dengan keterbatasan visual dasar. | Kontras warna cukup dan informasi penting tidak hanya mengandalkan warna. |
-| NFR-15 | P3 | Internationalization | Antarmuka minimal mendukung Bahasa Inggris, dan idealnya Bahasa Indonesia. | Teks tidak hard-coded di komponen utama. |
+| NFR-10 | P1 | Anti-Inflation Attack | NAV accounting wajib menggunakan virtual shares dan decimals offset. | Formula: navPerShare = (totalAssets + 1) / (totalSupply + 10**decimalsOffset). Wajib ada unit test yang membuktikan deposit pertama dengan 1 wei tidak dapat dimanipulasi. |
+| NFR-11 | P1 | Oracle Multi-Source | Sistem harus menggunakan minimal dua sumber oracle untuk aset kritis. | Chainlink sebagai primary, Pyth sebagai cross-check. Deviation antar oracle > 2% harus trigger alert atau pause. |
+| NFR-12 | P1 | Slippage Protection | Setiap swap harus memiliki minAmountOut atau maxAmountIn. | Tidak ada swap yang dieksekusi tanpa slippage protection. |
+| NFR-13 | P1 | Emergency Pause | Sistem harus dapat di-pause dalam satu transaksi oleh emergency role. | Pause harus menghentikan semua aksi ekonomi kecuali emergency redemption. |
+| NFR-14 | P1 | Audit Requirement | External audit harus dilakukan sebelum TVL melebihi $1M. | Laporan audit dipublikasikan. |
+| NFR-15 | P1 | Runway | Proyek harus memiliki runway operasional minimal 12 bulan sebelum public launch. | Budget mencakup gas, audit, legal, marketing, dan liquidity seeding. |
+| NFR-16 | P1 | Backtest Transparency | Backtest historis 2020-2026 harus dipublikasikan sebelum public launch. | Backtest mencakup max drawdown, CAGR, Sharpe ratio, dan perbandingan dengan BTC/ETH/S&P 500. |
+| NFR-17 | P2 | Upgradeability | Jika menggunakan upgradeable contract, harus ada timelock, storage safety, dan upgrade event. | Upgrade tidak dapat dilakukan oleh single EOA. |
+| NFR-18 | P2 | Scalability | Arsitektur harus mampu menangani peningkatan TVL tanpa mengubah logika inti secara drastis. | Rebalancing tetap aman saat vault bertambah besar, dengan slippage control. |
+| NFR-19 | P2 | Compliance Awareness | Produk tidak boleh mengklaim sebagai bank, e-money, atau sekuritas tanpa dasar hukum. | Legal disclaimer dan jurisdiction restriction diperlukan sebelum public launch. |
+| NFR-20 | P2 | Liquidity Safety | Aset dalam vault harus memiliki likuiditas cukup untuk redeem normal. | Aset dengan likuiditas rendah hanya boleh diberi bobot kecil atau memakai whitelist/fallback. |
+| NFR-21 | P3 | Accessibility | Dashboard harus dapat digunakan oleh user dengan keterbatasan visual dasar. | Kontras warna cukup dan informasi penting tidak hanya mengandalkan warna. |
+| NFR-22 | P3 | Internationalization | Antarmuka minimal mendukung Bahasa Inggris, dan idealnya Bahasa Indonesia. | Teks tidak hard-coded di komponen utama. |
 
 ---
 
@@ -303,11 +343,13 @@ MVP JAGAD mencakup:
 3. **Deposit dan redeem USDC**
    - User hanya perlu menyiapkan USDC sebagai aset masuk/keluar.
    - Deposit fee dan redeem fee dasar.
+   - Partial redemption dan redemption queue jika likuiditas tidak cukup.
+   - Emergency proportional redemption saat vault paused.
 
 4. **Multi-asset vault basket**
-   - Tier 1: USDC/sDAI, PAXG, synthetic silver.
-   - Tier 2: WBTC.
-   - Tier 3: proxy energi, tambang/logam, properti/REITs, agrikultur.
+   - Tier 1: 55% (USDC/sDAI 30%, PAXG 15%, synthetic silver 10%)
+   - Tier 2: 25% (WBTC)
+   - Tier 3: 20% (proxy energi 7%, proxy tambang/logam 7%, proxy properti/REITs 3%, proxy agrikultur 3%)
    - Tier 3 dapat memakai aset on-chain yang tersedia, synthetic exposure, atau approved RWA wrapper jika diperlukan.
 
 5. **Automatic initial allocation**
@@ -317,35 +359,54 @@ MVP JAGAD mencakup:
    - Rebalance dipicu ketika deviation bobot aset > 5%.
    - Menjual aset overweight dan membeli aset underweight.
    - Slippage protection wajib.
+   - Batch swap untuk efisiensi gas.
 
-7. **Basic dividend/yield sweep**
-   - Mendeteksi idle yield/dividen.
-   - Sweep jika melebihi minimum threshold.
+7. **Basic yield/revenue sweep**
+   - Mendeteksi idle yield/revenue.
+   - Sweep jika melebihi minimum threshold ($1,000 USDC).
    - Reinvest ke target yang dikonfigurasi.
 
 8. **Oracle price reading**
    - Menggunakan oracle untuk menghitung NAV dan bobot aset.
    - Validasi freshness dan outlier.
+   - Multi-source oracle (Chainlink + Pyth).
 
 9. **Admin controls**
    - Multisig owner.
    - Pause/unpause.
    - Update target weight, threshold, fee, asset address, dan oracle parameter.
+   - Timelock untuk perubahan kritis.
 
 10. **Minimal dashboard**
-   - Tampilkan NAV.
-   - Tampilkan alokasi aktual vs target.
-   - Tampilkan deposit/redeem history.
-   - Tampilkan rebalance dan sweep history.
-   - Tampilkan disclaimer risiko.
+    - Tampilkan NAV.
+    - Tampilkan alokasi aktual vs target.
+    - Tampilkan deposit/redeem history.
+    - Tampilkan rebalance dan sweep history.
+    - Tampilkan disclaimer risiko.
+    - Tampilkan historical backtest.
 
 11. **Testing dan security baseline**
-   - Unit test.
-   - Integration test.
-   - Fuzz test.
-   - Invariant test.
-   - Testnet deployment.
-   - Internal security review sebelum mainnet soft launch.
+    - Unit test.
+    - Integration test.
+    - Fuzz test.
+    - Invariant test.
+    - Testnet deployment.
+    - Internal security review sebelum mainnet soft launch.
+
+12. **Compliance dan edukasi**
+    - Jurisdiction gating (geo-block US di MVP).
+    - Tidak menggunakan istilah "dividend".
+    - Tidak menggunakan tokenized stock US-domiciled di MVP.
+    - Disclaimer jelas bahwa $JGAD bukan stablecoin USD.
+
+13. **Backtest dan transparansi**
+    - Historical backtest 2020-2026 dipublikasikan sebelum public launch.
+    - Max drawdown, CAGR, Sharpe ratio, dan perbandingan dengan BTC/ETH/S&P 500.
+
+14. **Soft launch dengan TVL cap**
+    - TVL cap awal: $250,000.
+    - Redemption cap per window: $50,000 per 10 menit.
+    - Whitelist user opsional.
 
 ---
 
@@ -372,6 +433,8 @@ Berikut **tidak** termasuk MVP dan ditunda ke versi selanjutnya:
 | Full DAO governance | Terlalu dini; MVP butuh kontrol cepat dan aman. |
 | Real estate property satuan | Illiquid dan sulit rebalance; MVP lebih aman pakai REITs/proxy. |
 | Komoditas fisik yang disimpan sendiri | Butuh gudang, audit fisik, dan logistik. |
+| Istilah "dividend" dalam produk dan marketing | Dapat memicu klasifikasi security oleh regulator. Gunakan istilah "yield", "revenue", atau "NAV appreciation". |
+| Tokenized stock US-domiciled di MVP | Risiko regulasi tinggi. Gunakan synthetic proxy atau aset on-chain non-security. |
 
 ---
 
@@ -389,3 +452,19 @@ Setelah MVP stabil, kandidat pengembangan berikutnya:
 8. Auto tax report.
 9. Mobile app.
 10. Portfolio analytics lanjutan.
+
+---
+
+## Changelog
+
+| Tanggal | Versi | Perubahan |
+|---|---|---|
+| 2026-10-15 | 0.1.0 | Draft awal PRD |
+| 2026-10-16 | 0.2.0 | Update bobot basket: Tier 1 naik ke 55%, Tier 3 turun ke 20% |
+| 2026-10-16 | 0.2.0 | Tambah FR-7 dan FR-8: virtual shares dan minimum deposit untuk anti-inflation attack |
+| 2026-10-16 | 0.2.0 | Tambah FR-9 sampai FR-14: partial redemption, emergency proportional redemption, redemption cap, liquidity gate, operating reserve |
+| 2026-10-16 | 0.2.0 | Tambah FR-54 sampai FR-56: jurisdiction gating, larangan istilah "dividend", larangan tokenized stock US-domiciled di MVP |
+| 2026-10-16 | 0.2.0 | Tambah G9, G10, G11: max drawdown relatif terhadap BTC, runway 12 bulan, backtest historis |
+| 2026-10-16 | 0.2.0 | Tambah NFR-10 sampai NFR-16: anti-inflation attack, oracle multi-source, slippage protection, emergency pause, audit requirement, runway, backtest transparency |
+| 2026-10-16 | 0.2.0 | Update Tier 1: USDC/sDAI naik ke 30% |
+| 2026-10-16 | 0.2.0 | Update Tier 3: bobot turun ke 20% dengan komposisi energi 7%, tambang 7%, properti 3%, agri 3% |

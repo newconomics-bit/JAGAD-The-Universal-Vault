@@ -12,6 +12,7 @@ import {IOracleReader} from "./interfaces/IOracleReader.sol";
 import {IAssetRegistry} from "./interfaces/IAssetRegistry.sol";
 import {ITreasury} from "./interfaces/ITreasury.sol";
 import {IRebalancer} from "./interfaces/IRebalancer.sol";
+import {IYieldSweeper} from "./interfaces/IYieldSweeper.sol";
 import {IDexRouter} from "./interfaces/IDexRouter.sol";
 
 error BelowMinDeposit(uint256 amount, uint256 minimum);
@@ -31,6 +32,7 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
     IAssetRegistry public immutable assetRegistry;
     ITreasury public immutable treasury;
     IRebalancer public rebalancer;
+    IYieldSweeper public yieldSweeper;
     address public dexRouter;
 
     uint256 public depositFeeBps;
@@ -45,6 +47,7 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
     event Redeemed(address indexed user, uint256 jagadAmount, uint256 usdcAmount, uint256 fee);
     event VirtualPriceUpdated(uint256 newVirtualPrice);
     event RebalancerSet(address indexed rebalancer);
+    event YieldSweeperSet(address indexed yieldSweeper);
     event DexRouterSet(address indexed dexRouter);
 
     constructor(
@@ -80,6 +83,11 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
         if (_dexRouter == address(0)) revert ZeroAddress();
         dexRouter = _dexRouter;
         emit DexRouterSet(_dexRouter);
+    }
+
+    function setYieldSweeper(address _yieldSweeper) external onlyOwner {
+        yieldSweeper = IYieldSweeper(_yieldSweeper);
+        emit YieldSweeperSet(_yieldSweeper);
     }
 
     function getTotalAssetsValue() public view returns (uint256) {
@@ -208,6 +216,21 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
 
         emit Redeemed(msg.sender, jagadAmount, usdcAmount, fee);
         return usdcAmount;
+    }
+
+    /// @notice Sweep idle yield and reinvest into vault assets
+    /// @dev Only callable by keeper or owner. Approves USDC to YieldSweeper and triggers sweep.
+    function sweepYield(uint256 maxSlippageBps) external onlyOwner {
+        if (address(yieldSweeper) == address(0)) return;
+        
+        uint256 idleBalance = yieldSweeper.getIdleBalance();
+        if (idleBalance == 0) return;
+        
+        // Approve USDC to YieldSweeper
+        usdc.safeIncreaseAllowance(address(yieldSweeper), idleBalance);
+        
+        // Trigger yield sweep
+        yieldSweeper.sweepYield(maxSlippageBps);
     }
 
     function pause() external override onlyOwner {

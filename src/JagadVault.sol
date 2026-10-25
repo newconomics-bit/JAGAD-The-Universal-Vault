@@ -11,6 +11,8 @@ import {IJagadVault} from "./interfaces/IJagadVault.sol";
 import {IOracleReader} from "./interfaces/IOracleReader.sol";
 import {IAssetRegistry} from "./interfaces/IAssetRegistry.sol";
 import {ITreasury} from "./interfaces/ITreasury.sol";
+import {IRebalancer} from "./interfaces/IRebalancer.sol";
+import {IDexRouter} from "./interfaces/IDexRouter.sol";
 
 error BelowMinDeposit(uint256 amount, uint256 minimum);
 error ZeroAmount();
@@ -28,6 +30,8 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
     IOracleReader public immutable oracleReader;
     IAssetRegistry public immutable assetRegistry;
     ITreasury public immutable treasury;
+    IRebalancer public rebalancer;
+    address public dexRouter;
 
     uint256 public depositFeeBps;
     uint256 public redeemFeeBps;
@@ -40,6 +44,8 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
     event Deposited(address indexed user, uint256 usdcAmount, uint256 jagadAmount, uint256 fee);
     event Redeemed(address indexed user, uint256 jagadAmount, uint256 usdcAmount, uint256 fee);
     event VirtualPriceUpdated(uint256 newVirtualPrice);
+    event RebalancerSet(address indexed rebalancer);
+    event DexRouterSet(address indexed dexRouter);
 
     constructor(
         address _usdc,
@@ -65,8 +71,47 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
         jagadToken = _jagadToken;
     }
 
+    function setRebalancer(address _rebalancer) external onlyOwner {
+        rebalancer = IRebalancer(_rebalancer);
+        emit RebalancerSet(_rebalancer);
+    }
+
+    function setDexRouter(address _dexRouter) external onlyOwner {
+        if (_dexRouter == address(0)) revert ZeroAddress();
+        dexRouter = _dexRouter;
+        emit DexRouterSet(_dexRouter);
+    }
+
     function getTotalAssetsValue() public view returns (uint256) {
-        return usdc.balanceOf(address(this)) * USDC_TO_WAD;
+        IAssetRegistry.AssetConfig[] memory assets = assetRegistry.getAssets();
+        uint256 numAssets = assets.length;
+        uint256 totalValueWad = 0;
+
+        for (uint256 i = 0; i < numAssets; i++) {
+            IAssetRegistry.AssetConfig memory asset = assets[i];
+            if (!asset.enabled) continue;
+
+            uint256 balance = IERC20(asset.token).balanceOf(address(this));
+            uint256 valueWad;
+
+            if (asset.isNumeraire) {
+                // USDC: balance is in 6 decimals, convert to WAD (18 decimals)
+                valueWad = balance * USDC_TO_WAD;
+            } else {
+                // Get price from oracle
+                uint256 priceWad = oracleReader.getNormalizedPrice(asset.priceFeed);
+                // valueWad = balance (asset decimals) * priceWad (18 decimals) / 10^assetDecimals
+                if (asset.decimals <= 18) {
+                    valueWad = (balance * priceWad) / (10**asset.decimals);
+                } else {
+                    valueWad = (balance * priceWad) / (10**asset.decimals);
+                }
+            }
+
+            totalValueWad += valueWad;
+        }
+
+        return totalValueWad;
     }
 
     function getNav() public view override returns (uint256 totalValueWad, uint256 navPerShareWad) {
@@ -84,8 +129,14 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
 
         usdc.safeTransferFrom(msg.sender, address(this), usdcAmount);
         if (fee > 0) {
-            usdc.safeIncreaseAllowance(address(treasury), fee);
-            treasury.collectFee(address(usdc), fee);
+            // Directly transfer fee to Treasury (avoid allowance issue with Treasury.collectFee)
+            usdc.safeTransfer(address(treasury), fee);
+        }
+
+        // Allocate net amount to assets via Rebalancer
+        if (address(rebalancer) != address(0)) {
+            usdc.safeIncreaseAllowance(address(rebalancer), netAmount);
+            rebalancer.allocate(netAmount);
         }
 
         // Calculate shares: convert netAmount from USDC base units to WAD, then divide by virtualPrice
@@ -102,7 +153,6 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
         if (virtualPrice == 0) revert ZeroVirtualPrice();
 
         // usdcValue is in WAD (18 decimals): shares * virtualPrice / WAD
-        // Since virtualPrice = WAD initially, usdcValue = jagadAmount (in WAD)
         uint256 usdcValue = (jagadAmount * virtualPrice) / WAD;
         uint256 feeWad = (usdcValue * redeemFeeBps) / 10000;
         
@@ -110,11 +160,19 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
         usdcAmount = (usdcValue - feeWad) / USDC_TO_WAD;
         uint256 fee = feeWad / USDC_TO_WAD;
 
+        // Liquidate assets to get USDC via Rebalancer
+        if (address(rebalancer) != address(0)) {
+            // Approve rebalancer for all non-numeraire assets
+            _approveRebalancerForAssets();
+            // usdcValue is in WAD, we need USDC base units (6 decimals)
+            rebalancer.liquidate(usdcValue / USDC_TO_WAD);
+        }
+
         jagadToken.burn(msg.sender, jagadAmount);
 
         if (fee > 0) {
-            usdc.safeIncreaseAllowance(address(treasury), fee);
-            treasury.collectFee(address(usdc), fee);
+            // Directly transfer fee to Treasury
+            usdc.safeTransfer(address(treasury), fee);
         }
         usdc.safeTransfer(msg.sender, usdcAmount);
 
@@ -126,7 +184,6 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
         if (virtualPrice == 0) revert ZeroVirtualPrice();
 
         // usdcValue is in WAD (18 decimals): shares * virtualPrice / WAD
-        // Since virtualPrice = WAD initially, usdcValue = jagadAmount (in WAD)
         uint256 usdcValue = (jagadAmount * virtualPrice) / WAD;
         uint256 feeWad = (usdcValue * redeemFeeBps) / 10000;
         
@@ -134,11 +191,18 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
         uint256 usdcAmount = (usdcValue - feeWad) / USDC_TO_WAD;
         uint256 fee = feeWad / USDC_TO_WAD;
 
+        // Liquidate assets to get USDC via Rebalancer
+        if (address(rebalancer) != address(0)) {
+            // Approve rebalancer for all non-numeraire assets
+            _approveRebalancerForAssets();
+            rebalancer.liquidate(usdcValue / USDC_TO_WAD);
+        }
+
         jagadToken.burn(msg.sender, jagadAmount);
 
         if (fee > 0) {
-            usdc.safeIncreaseAllowance(address(treasury), fee);
-            treasury.collectFee(address(usdc), fee);
+            // Directly transfer fee to Treasury
+            usdc.safeTransfer(address(treasury), fee);
         }
         usdc.safeTransfer(msg.sender, usdcAmount);
 
@@ -183,5 +247,24 @@ contract JagadVault is Pausable, ReentrancyGuard, Ownable, IJagadVault {
         if (newVirtualPrice < virtualPrice) revert ZeroVirtualPrice();
         virtualPrice = newVirtualPrice;
         emit VirtualPriceUpdated(newVirtualPrice);
+    }
+
+    /// @notice Approve rebalancer for all non-numeraire assets held by vault
+    /// @dev Should be called before rebalance() to allow rebalancer to pull tokens
+    function approveRebalancerForAllAssets() external onlyOwner {
+        _approveRebalancerForAssets();
+    }
+
+    function _approveRebalancerForAssets() internal {
+        IAssetRegistry.AssetConfig[] memory assets = assetRegistry.getAssets();
+        for (uint256 i = 0; i < assets.length; i++) {
+            IAssetRegistry.AssetConfig memory asset = assets[i];
+            if (asset.enabled && !asset.isNumeraire) {
+                uint256 balance = IERC20(asset.token).balanceOf(address(this));
+                if (balance > 0) {
+                    IERC20(asset.token).safeIncreaseAllowance(address(rebalancer), balance);
+                }
+            }
+        }
     }
 }
